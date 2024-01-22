@@ -2,7 +2,6 @@
 package ubc.cosc322;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import sfs2x.client.entities.Room;
@@ -79,11 +78,11 @@ public class COSC322Test extends GamePlayer{
 		In a game player, upon receiving this message about your opponent's move, you will also need to calculate your move and send your move to the server using the method GameClient.sendMoveMessage(...) (these are the core tasks of this project you will have to by the middle of March)
 
 		 */
-		if(messageType.equals(msgDetails.equals("GAME_ACTION_MOVE"))) {
+		if(messageType.equals(messageType.equals("GAME_ACTION_MOVE"))) {
 			gamegui.updateGameState(msgDetails);
 			sendNextMove();
 		}
-		else if(messageType.equals(msgDetails.equals("GAME_STATE_BOARD"))){
+		else if(messageType.equals(messageType.equals("GAME_STATE_BOARD"))){
 			ArrayList<Integer> Gameboard = (ArrayList<Integer>)msgDetails.get("game-state");
 			gamegui.setGameState(Gameboard);
 		}
