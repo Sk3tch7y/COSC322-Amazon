@@ -29,6 +29,10 @@ public class COSC322Test extends GamePlayer {
 	
 	private static boolean color = true; // true for black, false for white
 	private static int turn = 0;
+	//starting queens
+	public static int[][] blackQueens = {{1, 7}, {4, 1}, {7, 1}, {10, 7}};
+	public static int[][] whiteQueens = {{4, 1}, {1, 4}, {7, 1}, {10, 4}};
+
 	public static void main(String[] args) {
 		COSC322Test player = new COSC322Test(userName, passwd);
 		//HumanPlayer player2 = new HumanPlayer();
@@ -93,7 +97,7 @@ public class COSC322Test extends GamePlayer {
 		} else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
 			System.out.println(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR));
 			gamegui.updateGameState(msgDetails);
-
+			updateQueens(msgDetails);
 			handleOpponentMove(msgDetails);
 
 		} else if (messageType.equals("user-count-change")) {
@@ -102,8 +106,32 @@ public class COSC322Test extends GamePlayer {
 		return true;
 	}
 
+	private void updateQueens(Map<String, Object> msgDetails) {
+		int[] from = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
+		int[] to = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
+		//checks and updates the queens
+		if (color){
+			for (int[] i : blackQueens) {
+				if (i[0] == from[0] && i[1] == from[1]){
+					i[0] = to[0];
+					i[1] = to[1];
+				}
+			}
+		}
+		else{
+			for (int[] i : whiteQueens) {
+				if (i[0] == from[0] && i[1] == from[1]){
+					i[0] = to[0];
+					i[1] = to[1];
+				}
+			}
+		}
+		turn++;
+	}
+
 	private void handleOpponentMove(Map<String, Object> msgDetails) {
-		takeAction action = new takeAction(msgDetails, color, turn);
+		//Find an action to take and send it
+		
 	}
 
 	@Override
