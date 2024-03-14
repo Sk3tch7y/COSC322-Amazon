@@ -74,6 +74,9 @@ public class ActionFactory {
         //uses the formula for the number of possible moves where a queen can move to any {x+cx, y+cy} where |cx| = |cy|
         for(int i = 0; i < yourQueens.length; i++){
             int[] queen = yourQueens[i];
+            //TODO: implement back propagation for each state using a heuristic function
+            //might have to add a turn dependent variable to help distinguish between when the algorithm should add the 
+            //max or min value based on alpha beta pruning
             int benefit = 0;
             //repeats each value of x and y for each queen
             for(int x = 0; x < 10; x++){
