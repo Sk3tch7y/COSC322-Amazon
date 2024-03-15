@@ -98,7 +98,7 @@ public class ActionFactory {
                         Action(gameState, depth, theirQueens, yourQueens);
                         undoMove(move, queen, gameState);
                     }
-                    if (x-y == queen[0]-queen[1] && gameState[x][y] == 0) {
+                    if (Math.abs(x-y) == Math.abs(queen[0]-queen[1]) && gameState[x][y] == 0) {
                         int[] move = new int[]{x, y};
                         makeMove(move, queen, gameState);
                         Action(gameState, depth, theirQueens, yourQueens);
