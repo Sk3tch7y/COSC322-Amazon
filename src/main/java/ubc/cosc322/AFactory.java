@@ -3,9 +3,10 @@ package ubc.cosc322;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ActionFactory {
+public class AFactory {
     // TODO: implement the depth scaling factor
     public static int depth = 5;
+
     public static int depthCalc(int turn) {
         /*
          * since each turn the maximum number of possible moves decreases by a minimum
@@ -67,49 +68,111 @@ public class ActionFactory {
 
         return 5;
     }
-    public static int monteCarlos(int[][] gameState, int[][] nextQueens, int[][] previousQueens, int depth){
-        //assess depth to search until
-        //use actions to find a queen move and an arrow placement
-        /*
-        if(depth == -1){
-            return;
+
+    public static int[][] deepCopy2DArray(int[][] original) {
+        if (original == null) {
+            return null;
         }
-         */
 
+        final int[][] result = new int[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            // For each row, copy the row itself
+            result[i] = Arrays.copyOf(original[i], original[i].length);
+        }
 
-        return 0;
+        return result;
     }
-    public static void ArrowMove(int[][] gameState, int[][] yourQueens, int[][] theirQueens, int depth) {
-        
-        ArrayList<int[][]> movement = Actions(gameState, yourQueens, theirQueens) ;
-        int possibleMoves = movement.size();
+
+    
+    /**
+     * Performs the Monte Carlo search algorithm to determine the best move for the
+     * current player.
+     * 
+     * @param gameState      The current state of the game represented as a 2D
+     *                       array.
+     * @param nextQueens     The positions of the next queens to be placed
+     *                       represented as a 2D array.
+     * @param previousQueens The positions of the previous queens that have been
+     *                       placed represented as a 2D array.
+     * @param depth          The depth of the search algorithm.
+     * @param turn           The current player's turn (true for player 1, false for
+     *                       player 2).
+     * @return The number of possible actions after performing the best move.
+     */
+    public static int sumOfPos = 0;
+    public static Action bestAction = null;
+    public static int bestMove = -1;
+
+    
+
+    /**
+     * Generates a list of possible actions for the ArrowMove strategy.
+     * 
+     * @param movement    The list of possible movements for the player.
+     * @param gameState   The current state of the game.
+     * @param yourQueens  The positions of the player's queens.
+     * @param theirQueens The positions of the opponent's queens.
+     * @param depth       The depth of the search.
+     * @return The list of possible actions.
+     */
+    public static ArrayList<Action> ArrowMove(ArrayList<int[][]> movement, int[][] gameState, int[] yourQueen, int[][] yourQueens,
+            int[][] theirQueens) {
+
         ArrayList<Action> actions = new ArrayList<Action>();
-        for(int[][] move : movement){
+        for (int[][] move : movement) {
             makeMove(move, gameState);
-            ArrayList<int[][]> arrows = Actions(gameState, yourQueens, theirQueens);
-            for(int[][] arrow : arrows){
-                actions.add(new Action(move, arrow));
+            ArrayList<int[][]> arrows = Actions(gameState, move[0], theirQueens);
+            for (int[][] arrow : arrows) {
+                actions.add(new Action(move, arrow, gameState, yourQueens, theirQueens));
             }
             undoMove(move, gameState);
 
         }
-        //for each action, generate the possible arrows and generate your possible moves minus your opponents possible moves
-        
+        return actions;
+        // for each action, generate the possible arrows and generate your possible
+        // moves minus your opponents possible moves
+
     }
-    
-    public static ArrayList<int[][]> Actions(int[][] gameState, int[][] yourQueens, int[][] theirQueens) {
+
+    private static void placeArrow(int[][] move, int[][] gameState) {
+        gameState[move[0][0]][move[0][1]] = 3;
+    }
+
+    private static void undoArrow(int[][] move, int[][] gameState) {
+        gameState[move[0][0]][move[0][1]] = 0;
+    }
+
+    public static ArrayList<int[][]> actionsForAllQueens(int[][] gameState, int[][] yourQueens, int[][] theirQueens) {
         ArrayList<int[][]> result = new ArrayList<int[][]>();
         for (int i = 0; i < yourQueens.length; i++) {
-            for (int x = 0; x <= 9; x++) {
-                for (int y = 0; y <= 9; y++) {
-                    int[] move = { x, y };
-                    if (isValidMove(move, yourQueens[i], gameState)) {
-                        result.add(new int[][]{move, yourQueens[i]});
-                    }
+            result.addAll(Actions(gameState, yourQueens[i], theirQueens));
+
+        }
+        return result;
+    }
+
+
+    public static ArrayList<int[][]> Actions(int[][] gameState, int[] yourQueen, int[][] theirQueens) {
+        ArrayList<int[][]> result = new ArrayList<int[][]>();
+
+        for (int x = 0; x <= 9; x++) {
+            for (int y = 0; y <= 9; y++) {
+                int[] move = { x, y };
+                if (isValidMove(move, yourQueen, gameState)) {
+                    result.add(new int[][] { move, yourQueen });
                 }
             }
         }
+
         return result;
+    }
+    public static ArrayList<Action> allMoves(int[][] gameState, int[][] yourQueens, int[][] theirQueens) {
+        ArrayList<Action> moves = new ArrayList<Action>();
+        ArrayList<int[][]> movement = actionsForAllQueens(gameState, yourQueens, theirQueens);
+        for (int[][] move : movement) {
+            moves.addAll(ArrowMove(movement, gameState, move[1], yourQueens, theirQueens));
+        }
+        return moves;
     }
 
     public static boolean isValidMove(int[] move, int[] queen, int[][] gameState) {
@@ -132,27 +195,27 @@ public class ActionFactory {
     }
 
     private static boolean isValidDiagonal(int[] move, int[] queen, int[][] gameState) {
-        if(move[0] > queen[0] && move[1] > queen[1]){
-            for(int i = 1; i < move[0] - queen[0]; i++){
-                if(gameState[queen[0] + i][queen[1] + i] != 0){
+        if (move[0] > queen[0] && move[1] > queen[1]) {
+            for (int i = 1; i < move[0] - queen[0]; i++) {
+                if (gameState[queen[0] + i][queen[1] + i] != 0) {
                     return false;
                 }
             }
-        } else if(move[0] > queen[0] && move[1] < queen[1]){
-            for(int i = 1; i < move[0] - queen[0]; i++){
-                if(gameState[queen[0] + i][queen[1] - i] != 0){
+        } else if (move[0] > queen[0] && move[1] < queen[1]) {
+            for (int i = 1; i < move[0] - queen[0]; i++) {
+                if (gameState[queen[0] + i][queen[1] - i] != 0) {
                     return false;
                 }
             }
-        } else if(move[0] < queen[0] && move[1] > queen[1]){
-            for(int i = 1; i < queen[0] - move[0]; i++){
-                if(gameState[queen[0] - i][queen[1] + i] != 0){
+        } else if (move[0] < queen[0] && move[1] > queen[1]) {
+            for (int i = 1; i < queen[0] - move[0]; i++) {
+                if (gameState[queen[0] - i][queen[1] + i] != 0) {
                     return false;
                 }
             }
-        } else if(move[0] < queen[0] && move[1] < queen[1]){
-            for(int i = 1; i < queen[0] - move[0]; i++){
-                if(gameState[queen[0] - i][queen[1] - i] != 0){
+        } else if (move[0] < queen[0] && move[1] < queen[1]) {
+            for (int i = 1; i < queen[0] - move[0]; i++) {
+                if (gameState[queen[0] - i][queen[1] - i] != 0) {
                     return false;
                 }
             }
@@ -213,35 +276,36 @@ public class ActionFactory {
         gameState[move[1][0]][move[1][1]] = queen;
         gameState[move[0][0]][move[0][1]] = 0;
     }
-
-    public static int[][] generateActionOutcome(int[][] move, int[][] gameState, int depth) {
-        return gameState;
-    }
-
-    // evaluate benefit ratio: your moves/their moves
-    public int evaluateBenefits(int[][] gameState, int[][] yourQueens, int[][] theirQueens) {
-        return 0;
-    }
+    // for action type objects
 
     public static void main(String[] args) {
         // tests
-        int[][] gameState = {                   //First
-                { 0, 0, 0, 2, 0, 0, 2, 0, 0, 0 },//0
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//1
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//2
-                { 2, 0, 0, 1, 0, 0, 3, 0, 0, 2 },//3
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//4
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//5
-                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },//6
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//7
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//8
-                { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }//9
-        };//Sec   0  1  2  3  4  5  6  7  8  9
+        int[][] gameState = { // First
+                { 0, 0, 0, 2, 0, 0, 2, 0, 0, 0 }, // 0
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 2 }, // 3
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 4
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
+                { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 6
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+                { 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 }// 9
+        };// Sec 0 1 2 3 4 5 6 7 8 9
 
-        int[][] yourQueens = { { 3, 3 },{ 0, 3 },  { 6, 0 }, { 9, 3 } };
-        int[][] theirQueens = { { 0, 6 }, { 3, 9 }, { 6, 9 }, { 9, 6 } };
+        int[][] yourQueens = { { 3, 0 }, { 0, 3 }, { 0, 6 }, { 3, 9 } };
+        int[][] theirQueens = { { 6, 0 }, { 9, 3 }, { 9, 6 }, { 6, 9 } };
         // test actions
-        ArrayList<int[][]> result = Actions(gameState, yourQueens, theirQueens);
-        System.out.println(Arrays.deepToString(result.toArray()));
+        
+        // ArrowMove(result, gameState, yourQueens, theirQueens, depth);
+        // System.out.println(Arrays.deepToString(gameState));
+        long startTime = System.currentTimeMillis();
+
+        ArrayList<Action> actions = allMoves(gameState, theirQueens, yourQueens);
+        long endTime = System.currentTimeMillis();
+        long timeElapsed = endTime - startTime;
+        System.out.println(Arrays.deepToString(actions.toArray()).toString());
+        System.out.println("Execution time in seconds: " + timeElapsed);
+
     }
 }
