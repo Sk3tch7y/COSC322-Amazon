@@ -29,7 +29,6 @@ public class COSC322Test extends GamePlayer {
 	
 	private static boolean color = true; // true for black, false for white
 	private static int turn = 0;
-	
 	//starting queens
 	public static int[][] blackQueens = {{1, 7}, {4, 1}, {7, 1}, {10, 7}};
 	public static int[][] whiteQueens = {{4, 1}, {1, 4}, {7, 1}, {10, 4}};
@@ -111,7 +110,7 @@ public class COSC322Test extends GamePlayer {
 		int[] from = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
 		int[] to = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
 		//checks and updates the queens
-		if (color){
+		if (!color){
 			for (int[] i : blackQueens) {
 				if (i[0] == from[0] && i[1] == from[1]){
 					i[0] = to[0];
@@ -130,10 +129,22 @@ public class COSC322Test extends GamePlayer {
 		turn++;
 	}
 
-	private void handleOpponentMove(Map<String, Object> msgDetails) {
+	static void handleOpponentMove(Map<String, Object> msgDetails) {
 		//Find an action to take and send it
 		
 	}
+	static void translateArr(ArrayList<Integer> arr){
+		int[][] board = new int[10][10];
+		int count = 0;
+		for (int i = 0; i < 10; i++){
+			for (int j = 0; j < 10; j++){
+				board[i][j] = arr.get(count);
+				count++;
+			}
+		}
+
+	}
+	
 
 	@Override
 	public String userName() {
