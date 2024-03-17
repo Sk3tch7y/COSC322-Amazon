@@ -29,6 +29,7 @@ public class COSC322Test extends GamePlayer {
 	
 	private static boolean color = true; // true for black, false for white
 	private static int turn = 0;
+	
 	//starting queens
 	public static int[][] blackQueens = {{1, 7}, {4, 1}, {7, 1}, {10, 7}};
 	public static int[][] whiteQueens = {{4, 1}, {1, 4}, {7, 1}, {10, 4}};
