@@ -23,6 +23,9 @@ public class takeAction {
         if(action.possibleActions == null){
             generateChildren(action);
         }
+        if(action.possibleActions.size() == 0){
+            return Double.POSITIVE_INFINITY;
+        }
         Action temp = action.possibleActions.get(random.nextInt(action.possibleActions.size()));
         depth = depth - 1;
         return exploreState(temp, depth);
@@ -30,6 +33,7 @@ public class takeAction {
     //get the best action from the possible actions
     public Action findBestAction(Action a, int depth){
         double bestScore = Double.POSITIVE_INFINITY;
+        int numMoves = 15;
         Action bestAction = null;
         if(a.possibleActions == null){
             generateChildren(a);
@@ -37,7 +41,12 @@ public class takeAction {
         if(a.possibleActions.size() == 0){
             return null;
         }
-        for(int i = 0; i < depth; i++){
+        //if the number of possible actions is less than the depth, we can only search the number of possible actions
+        if(a.possibleActions.size() <= numMoves){
+            numMoves = a.possibleActions.size();
+        }
+        
+        for(int i = 0; i < numMoves; i++){
             Action action = a.possibleActions.get(random.nextInt(a.possibleActions.size()));
             double score = exploreState(action, depth);
             //System.out.println("Action:" + action.toString() + " Score: " + score);
@@ -57,14 +66,14 @@ public class takeAction {
         ArrayList<Action> yourActions = AFactory.allMoves(a.board, a.myQueens, a.theirQueens, a.turn);
         ArrayList<Action> theirActions = AFactory.allMoves(a.board, a.theirQueens, a.myQueens, !a.turn);
         if(yourActions.size() == 0){
-            return Double.POSITIVE_INFINITY;
+            return Double.NEGATIVE_INFINITY;
         }
         else if(theirActions.size() == 0){
-            return 0;
+            return Double.POSITIVE_INFINITY;
         }
         
         //System.out.println("Your Actions: " + yourActions.size() + " Their Actions: " + theirActions.size());
-        return (theirActions.size()/yourActions.size());
+        return (yourActions.size()/theirActions.size());
         //return the ratio of their possible moves to your possible moves
         //game wants the lowest value possible
         

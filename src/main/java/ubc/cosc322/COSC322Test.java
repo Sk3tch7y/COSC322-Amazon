@@ -27,7 +27,7 @@ public class COSC322Test extends GamePlayer {
 	private static GameClient gameClient = null;
 	private static BaseGameGUI gamegui = null;
 
-	private static String userName = "Adam";
+	private static String userName = "Adam" + Math.round(Math.random()* 1000);
 	private static String passwd = "WoahAPassword";
 	
 	private static boolean color = true; // true for black, false for white
@@ -82,9 +82,11 @@ public class COSC322Test extends GamePlayer {
 
 		if (messageType.equals(GameMessage.GAME_STATE_BOARD)) {
 			ArrayList<Integer> gameS = (ArrayList<Integer>) msgDetails.get("game-state");
-			System.out.println("Game Board: " + gameS);
+			System.out.println("Game Board: " + gameS + "\n");
+			gamegui.setGameState(gameS);
 			board.setGameState(gameS);
 			translateArr(gameS);
+			System.out.println(Arrays.deepToString(state));
 		} else if (messageType.equals(GameMessage.GAME_ACTION_START)) {
 
 			this.setColor((String)msgDetails.get(AmazonsGameMessage.PLAYER_BLACK));
@@ -100,7 +102,9 @@ public class COSC322Test extends GamePlayer {
 		} else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
 			//System.out.println(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR));
 			gamegui.updateGameState(msgDetails);
-			makeMove(msgDetails, color);
+			board.updateGameState(msgDetails);
+			makeMove(msgDetails);
+			translateArr(state);
 			handleOpponentMove(msgDetails);
 
 		} else if (messageType.equals("user-count-change")) {
@@ -109,40 +113,26 @@ public class COSC322Test extends GamePlayer {
 		return true;
 	}
 
-	private static void updateQueens(int[][] move, boolean color) {
-		int[] from = move[0];
-		int[] to = move[1];
-		//checks and updates the queens
-		if (!color){
-			for (int[] i : blackQueens) {
-				if (i[0] == from[0] && i[1] == from[1]){
-					i[0] = to[0];
-					i[1] = to[1];
-				}
-			}
-		}
-		else{
-			for (int[] i : whiteQueens) {
-				if (i[0] == from[0] && i[1] == from[1]){
-					i[0] = to[0];
-					i[1] = to[1];
-				}
-			}
-		}
-		turn++;
-	}
+	
 
+	
 	public static void handleOpponentMove(Map<String, Object> msgDetails) {
 		//Find an action to take and send it
 		//int[][] gameState = translateArr((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
 		//Action action = new Action(gameState, msgDetails.get(AmazonsGameMessage.ARROW_POS), blackQueens, whiteQueens, blackQueens, color);
 		System.out.println("Making a move");
-		if(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR) != null){
-			makeMove(msgDetails, !color);
-		}
 		takeAction t = new takeAction();
-		Action action = new Action(state, blackQueens, whiteQueens, color, 0);
-		Action bestAction = t.findBestAction(action, 8);
+		Action action;
+		if(!color){
+			action = new Action(state, blackQueens, whiteQueens, color, 0);
+		}else{
+			action = new Action(state, whiteQueens, blackQueens, color, 0);
+		}
+		Action bestAction = t.findBestAction(action, 4);
+		if(bestAction == null){
+			System.out.println("No moves left");
+			return;
+		}
 		//send the move
 		int[] next = bestAction.getMove()[0];
 		int[] move = bestAction.getMove()[1];
@@ -156,7 +146,12 @@ public class COSC322Test extends GamePlayer {
 		makeMove(new int[][]{move, next}, arrow, color);
 		board.updateGameState(queenFrom, queenTo, arrowPos);
 		gameClient.sendMoveMessage(queenFrom, queenTo, arrowPos);
-		
+		Map<String, Object> msg = new HashMap<String, Object>();
+		msg.put(AmazonsGameMessage.QUEEN_POS_CURR, queenFrom);
+		msg.put(AmazonsGameMessage.QUEEN_POS_NEXT, queenTo);
+		msg.put(AmazonsGameMessage.ARROW_POS, arrowPos);
+		gamegui.updateGameState(msg);
+		board.updateGameState(msg);
 	}
 	public static ArrayList<Integer> convertToList(int[] a){
 		ArrayList<Integer> list = new ArrayList<>();
@@ -175,30 +170,72 @@ public class COSC322Test extends GamePlayer {
 		return list;
 	}
 	public static void translateArr(ArrayList<Integer> arr){
-		int count = 0;
+		int count = 12;
+		int wQueens = 0;
+		int bQueens = 0;
 		for (int i = 0; i < 10; i++){
 			for (int j = 0; j < 10; j++){
+				if(count %11 == 0){
+					count++;
+				}
 				state[i][j] = arr.get(count);
+				if(state[i][j] == 1){
+					if(wQueens < 4){
+						whiteQueens[wQueens] = new int[]{i, j};
+						wQueens++;
+					}
+				}
+				else if(state[i][j] == 2){
+					if(bQueens < 4){
+						blackQueens[bQueens] = new int[]{i, j};
+						bQueens++;
+					}	
+				}
 				count++;
 			}
 		}
+		System.out.println(Arrays.deepToString(state));
+		System.out.println("White: " + Arrays.deepToString(whiteQueens));
+		System.out.println("Black: " + Arrays.deepToString(blackQueens));
+	}
+	public static void translateArr(int[][] arr){
+		
+		int wQueens = 0;
+		int bQueens = 0;
+		for (int i = 0; i < 10; i++){
+			for (int j = 0; j < 10; j++){
+				if(state[i][j] == 1){
+					if(wQueens < 4){
+						whiteQueens[wQueens] = new int[]{i, j};
+						wQueens++;
+					}
+				}
+				else if(state[i][j] == 2){
+					if(bQueens < 4){
+						blackQueens[bQueens] = new int[]{i, j};
+						bQueens++;
+					}	
+				}
+			}
+		}
+		System.out.println(Arrays.deepToString(state));
+		System.out.println("White: " + Arrays.deepToString(whiteQueens));
+		System.out.println("Black: " + Arrays.deepToString(blackQueens));
 	}
 
-	private static void makeMove(Map<String, Object> msgDetails, boolean color) {
+	private static void makeMove(Map<String, Object> msgDetails) {
 		ArrayList<Integer> QueenCur = (ArrayList<Integer>)msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
 		ArrayList<Integer> QueenNext = (ArrayList<Integer>)msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
 		ArrayList<Integer> arrowPos = (ArrayList<Integer>)msgDetails.get(AmazonsGameMessage.ARROW_POS);
 		int[] queenFrom = new int[] {QueenCur.get(0)-1, QueenCur.get(1)-1};
 		int[][] move = new int[][] {queenFrom, new int[] {QueenNext.get(0)-1, QueenNext.get(1)-1}};
 		int[] arrow = new int[]{arrowPos.get(0)-1, arrowPos.get(1)-1};
-		updateQueens(move, color);
 		int queen = state[move[1][0]][move[1][1]];
 		state[move[0][0]][move[0][1]] = queen;
 		state[move[1][0]][move[1][1]] = 0;
 		state[arrow[0]][arrow[1]] = -1;
 	}
 	private static void makeMove(int[][]move , int[] arrow, boolean color) {
-		updateQueens(move, color);
 		int queen = state[move[1][0]][move[1][1]];
 		state[move[0][0]][move[0][1]] = queen;
 		state[move[1][0]][move[1][1]] = 0;

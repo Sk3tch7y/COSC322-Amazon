@@ -97,6 +97,7 @@ public class AFactory {
             for (int y = 0; y <= 9; y++) {
                 int[] move = { x, y };
                 if (isValidMove(move, yourQueen, gameState)) {
+                    
                     result.add(new int[][] { move, yourQueen });
                 }
             }
@@ -219,11 +220,11 @@ public class AFactory {
     public static void main(String[] args) {
         // tests
         int[][] gameState = { // First
-                { 0, 0, 0, 2, 0, 0, 2, 0, 0, 0 }, // 0
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
-                { 2, 0, 0, 0, 0, 0, 0, 0, 0, 2 }, // 3
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 4
+                { 0, 0, -1, 2, -1, -1, 2, -1, 0, 0 }, // 0
+                { 0, 0, -1, -1, -1, -1, -1, -1, 0, 0 }, // 1
+                { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }, // 2
+                { 2, -1, 0, 0, 0, 0, 0, 0, 0, 2 }, // 3
+                { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }, // 4
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // 6
                 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
@@ -242,10 +243,14 @@ public class AFactory {
         takeAction t = new takeAction();
         Action a = new Action(gameState, yourQueens, theirQueens, turn, 0);
         Action best = t.findBestAction(a, 11);
-        System.out.println("Time in seconds: " + (System.currentTimeMillis() - startTime)/1000);
-        System.out.println(best.toString());
-        makeMove(best, gameState);
-        System.out.println(Arrays.deepToString(gameState));
+        while(best != null){
+            System.out.println("Time in seconds: " + (System.currentTimeMillis() - startTime)/1000);
+            System.out.println(best.toString());
+            makeMove(best, gameState);
+            System.out.println(Arrays.deepToString(gameState).replace("[", "").replace("],", "\n").replace("]", "").replace(",", " ").replace("-1", "X"));
+            best = t.findBestAction(best, 11);
+        }
+        
 
     }
 
